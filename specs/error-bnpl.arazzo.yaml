@@ -104,19 +104,19 @@ workflows:
         successCriteria:
           - condition: $statusCode == 200
         outputs:
-          eligibilityCheckRequired: $response.body.eligibilityCheckRequired
-          eligibleProducts: $response.body.productCodes
-          totalLoanAmount: $response.body.totalAmount
+          eligibilityCheckRequired: $response.body#/eligibilityCheckRequired
+          eligibleProducts: $response.body#/productCodes
+          totalLoanAmount: $response.body#/totalAmount
         onSuccess:
           - name: productsEligible
             type: goto
             stepId: getCustomerTermsAndConditions
             criteria:
-              - condition: $response.body.productCodes != null
+              - condition: $response.body#/productCodes != null
           - name: productsNotEligible
             type: end
             criteria:
-              - condition: $response.body.productCodes == null
+              - condition: $response.body#/productCodes == null
       - stepId: getCustomerTermsAndConditions
         description: Retrieve terms and conditions for BNPL loans.
         operationId: $sourceDescriptions.BnplEligibilityApi.getTermsAndConditions
@@ -152,7 +152,7 @@ workflows:
         successCriteria:
           - condition: $statusCode == 200 || $statusCode == 201
         outputs:
-          customer: $response.body.links.self
+          customer: $response.body#/links/self
         onSuccess:
           - name: customerCreated
             type: goto
@@ -182,19 +182,19 @@ workflows:
         successCriteria:
           - condition: $statusCode == 202
         outputs:
-          redirectAuthToken: $response.body.redirectAuthToken
-          loanTransactionId: $response.body.loanTransactionId
+          redirectAuthToken: $response.body#/redirectAuthToken
+          loanTransactionId: $response.body#/loanTransactionId
         onSuccess:
           - name: authorizationRequired
             type: goto
             stepId: authenticateCustomerAndAuthorizeLoan
             criteria:
-              - condition: $response.body.redirectAuthToken != null
+              - condition: $response.body#/redirectAuthToken != null
           - name: authorizationNotRequired
             type: goto
             stepId: retrievePaymentPlan
             criteria:
-              - condition: $response.body.redirectAuthToken == null
+              - condition: $response.body#/redirectAuthToken == null
       - stepId: authenticateCustomerAndAuthorizeLoan
         description: Authenticate the customer and obtain authorization for the loan.
         operationId: $sourceDescriptions.BnplEligibilityApi.getAuthorization
@@ -205,7 +205,7 @@ workflows:
         successCriteria:
           - condition: $statusCode == 200
         outputs:
-          redirectUrl: $response.headers.Location
+          redirectUrl: $response.header.Location
       - stepId: retrievePaymentPlan
         description: Retrieve the finalized payment plan after loan authorization.
         operationId: $sourceDescriptions.BnplLoanApi.retrieveBnplLoanTransaction
